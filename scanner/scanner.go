@@ -8,6 +8,7 @@ import (
 )
 
 func Scan() {
+	time.Sleep(20 * time.Second)
 	fmt.Println("Made with <3 DutchCoders")
 
 	c := clamd.NewClamd("/tmp/clamd.sock")

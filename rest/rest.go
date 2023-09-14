@@ -31,11 +31,14 @@ func (handler *HttpHandler) scanBinaryId(w http.ResponseWriter, r *http.Request)
 }
 
 func (handler *HttpHandler) scanFile(w http.ResponseWriter, r *http.Request) {
-	file, _ := os.CreateTemp("", "tmp")
-	defer os.Remove(file.Name())
-	io.Copy(file, r.Body)
+	tmpDir, _ := os.MkdirTemp("", "scan")
+	tmpFile, _ := os.CreateTemp(tmpDir, "scan")
+	io.Copy(tmpFile, r.Body)
 
-	res := scanner.Scan(file.Name())
+	f := cumulocity.CleanableFile{Filename: tmpFile.Name()}
+	defer f.Clean()
+
+	res := scanner.Scan(f.Filename)
 	if res.Vulnerable {
 		fmt.Fprintln(w, "vulnerable", res.Description)
 	} else {

@@ -22,15 +22,13 @@ func Wait() {
 	}
 }
 
-func Scan(filename string) ScanResult {
-	fmt.Printf("Scanning file %s\n", filename)
+func Scan(filePath string) ScanResult {
+	fmt.Printf("Scanning file %s\n", filePath)
 
 	clam := clamd.NewClamd("/tmp/clamd.sock")
 
-	dirpath := path.Dir(filename)
-	os.Chmod(dirpath, 555)
-	os.Chmod(filename, 444)
-	response, _ := clam.ContScanFile(filename)
+	allowFileRead(filePath)
+	response, _ := clam.ContScanFile(filePath)
 
 	for s := range response {
 		//fmt.Printf("scan Raw: %v\n", s.Raw)
@@ -50,4 +48,10 @@ func Scan(filename string) ScanResult {
 	}
 
 	return ScanResult{}
+}
+
+func allowFileRead(filePath string) {
+	dirPath := path.Dir(filePath)
+	os.Chmod(dirPath, 0555)
+	os.Chmod(filePath, 0444)
 }

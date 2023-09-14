@@ -2,10 +2,12 @@ package rest
 
 import (
 	"c8y-scanner/cumulocity"
+	"c8y-scanner/scanner"
 	"fmt"
-	"net/http"
-
 	"github.com/gorilla/mux"
+	"io"
+	"net/http"
+	"os"
 )
 
 type HttpHandler struct {
@@ -28,11 +30,25 @@ func (handler *HttpHandler) scanBinaryId(w http.ResponseWriter, r *http.Request)
 	fmt.Fprintf(w, message)
 }
 
+func (handler *HttpHandler) scanFile(w http.ResponseWriter, r *http.Request) {
+	file, _ := os.CreateTemp("", "tmp")
+	defer os.Remove(file.Name())
+	io.Copy(file, r.Body)
+
+	res := scanner.Scan(file.Name())
+	if res.Vulnerable {
+		fmt.Fprintln(w, "vulnerable", res.Description)
+	} else {
+		fmt.Fprintln(w, "not vulnerable")
+	}
+}
+
 func Init(m *cumulocity.Microservice) {
 	handler := HttpHandler{m: m}
 	r := mux.NewRouter()
-	r.HandleFunc("/", handler.hello)
-	r.HandleFunc("/scan/{id}", handler.scanBinaryId)
+	r.HandleFunc("/", handler.hello).Methods("GET")
+	r.HandleFunc("/scan", handler.scanFile).Methods("POST")
+	r.HandleFunc("/scan/{id}", handler.scanBinaryId).Methods("PUT")
 
 	http.ListenAndServe(":80", r)
 }

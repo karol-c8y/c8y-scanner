@@ -8,6 +8,6 @@ import (
 
 func main() {
 	ms := cumulocity.Init()
-	go rest.Init(&ms)
-	scanner.Test()
+	scanner.Wait()
+	rest.Init(&ms)
 }

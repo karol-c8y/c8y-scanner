@@ -5,6 +5,7 @@ import (
 	"c8y-scanner/rest"
 	"c8y-scanner/scanner"
 	"fmt"
+	"path"
 )
 
 func main() {
@@ -26,7 +27,7 @@ func checkGid(m *cumulocity.Microservice, gid string) {
 
 	result := scanner.Scan(file.Filename)
 	if result.Vulnerable {
-		message := fmt.Sprintf("%s is infected! %s", file.Filename, result.Description)
+		message := fmt.Sprintf("File %s (id: %s) is infected! %s", path.Base(file.Filename), gid, result.Description)
 		m.RaiseMajorAlarm("c8y-scanner", message)
 	} else {
 		message := fmt.Sprintf("No vulnerability found in %s", file.Filename)

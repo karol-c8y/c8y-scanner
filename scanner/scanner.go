@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dutchcoders/go-clamd"
 	"os"
+	"path"
 	"time"
 )
 
@@ -21,13 +22,15 @@ func Wait() {
 	}
 }
 
-func Scan(path string) ScanResult {
-	fmt.Printf("Scanning file %s\n", path)
+func Scan(filename string) ScanResult {
+	fmt.Printf("Scanning file %s\n", filename)
 
 	clam := clamd.NewClamd("/tmp/clamd.sock")
 
-	os.Chmod(path, 444)
-	response, _ := clam.ContScanFile(path)
+	dirpath := path.Dir(filename)
+	os.Chmod(dirpath, 555)
+	os.Chmod(filename, 444)
+	response, _ := clam.ContScanFile(filename)
 
 	for s := range response {
 		//fmt.Printf("scan Raw: %v\n", s.Raw)

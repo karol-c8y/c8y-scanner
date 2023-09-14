@@ -3,29 +3,36 @@ package rest
 import (
 	"c8y-scanner/cumulocity"
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
-func hello(w http.ResponseWriter, r *http.Request) {
+type HttpHandler struct {
+	m *cumulocity.Microservice
+}
+
+func (handler *HttpHandler) hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Try {url}/scan/{id} and watch for Events/Alarms")
 }
 
-func scanBinaryId(w http.ResponseWriter, r *http.Request) {
+func (handler *HttpHandler) scanBinaryId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	gid := vars["id"]
 
-	filepath := cumulocity.DownloadFile(gid)
+	filepath := handler.m.DownloadFile(gid)
+	defer handler.m.CleanupFile(filepath)
 
 	message := fmt.Sprintf("Scanning binary id %s, downloaded filename: %s", gid, filepath)
-	cumulocity.RaiseEvent("c8y-scanner", message)
+	handler.m.RaiseEvent("c8y-scanner", message)
 	fmt.Fprintf(w, message)
 }
 
-func Init() {
+func Init(m *cumulocity.Microservice) {
+	handler := HttpHandler{m: m}
 	r := mux.NewRouter()
-	r.HandleFunc("/", hello)
-	r.HandleFunc("/scan/{id}", scanBinaryId)
+	r.HandleFunc("/", handler.hello)
+	r.HandleFunc("/scan/{id}", handler.scanBinaryId)
 
 	http.ListenAndServe(":80", r)
 }

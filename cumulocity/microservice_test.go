@@ -1,8 +1,9 @@
 package cumulocity
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCleanupFile(t *testing.T) {
@@ -11,9 +12,9 @@ func TestCleanupFile(t *testing.T) {
 		dirToRemove = name
 		return nil
 	}
-	m := Microservice{}
+	c := CleanableFile{Filename: "/the/good/directory/is/this/but_not_this"}
 
-	m.CleanupFile("/the/good/directory/is/this/but_not_this")
+	c.Clean()
 
 	assert.Equal(t, "/the/good/directory/is/this", dirToRemove)
 }

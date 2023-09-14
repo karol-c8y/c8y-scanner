@@ -11,7 +11,8 @@ import (
 )
 
 type HttpHandler struct {
-	m *cumulocity.Microservice
+	m                  *cumulocity.Microservice
+	filesToScanChannel *chan string
 }
 
 func (handler *HttpHandler) hello(w http.ResponseWriter, r *http.Request) {
@@ -20,14 +21,13 @@ func (handler *HttpHandler) hello(w http.ResponseWriter, r *http.Request) {
 
 func (handler *HttpHandler) scanBinaryId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	gid := vars["id"]
+	var gid string = vars["id"]
 
-	filepath := handler.m.DownloadFile(gid)
-	defer handler.m.CleanupFile(filepath)
-
-	message := fmt.Sprintf("Scanning binary id %s, downloaded filename: %s", gid, filepath)
+	message := fmt.Sprintf("Scanning binary id %s", gid)
 	handler.m.RaiseEvent("c8y-scanner", message)
 	fmt.Fprintf(w, message)
+
+	*handler.filesToScanChannel <- gid
 }
 
 func (handler *HttpHandler) scanFile(w http.ResponseWriter, r *http.Request) {
@@ -43,8 +43,8 @@ func (handler *HttpHandler) scanFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Init(m *cumulocity.Microservice) {
-	handler := HttpHandler{m: m}
+func Init(m *cumulocity.Microservice, filesToScanChannel *chan string) {
+	handler := HttpHandler{m: m, filesToScanChannel: filesToScanChannel}
 	r := mux.NewRouter()
 	r.HandleFunc("/", handler.hello).Methods("GET")
 	r.HandleFunc("/scan", handler.scanFile).Methods("POST")

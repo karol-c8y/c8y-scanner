@@ -1,10 +1,11 @@
 package cumulocity
 
 import (
-	"github.com/reubenmiller/go-c8y/pkg/c8y"
-	"github.com/reubenmiller/go-c8y/pkg/microservice"
 	"os"
 	"path"
+
+	"github.com/reubenmiller/go-c8y/pkg/c8y"
+	"github.com/reubenmiller/go-c8y/pkg/microservice"
 )
 
 var (
@@ -15,6 +16,10 @@ type Microservice struct {
 	ms *microservice.Microservice
 }
 
+type CleanableFile struct {
+	Filename string
+}
+
 func Init() Microservice {
 	ms := microservice.NewDefaultMicroservice(microservice.Options{})
 	ms.Config.SetDefault("application.name", "c8y-scanner-clamav")
@@ -23,13 +28,13 @@ func Init() Microservice {
 	return Microservice{ms: ms}
 }
 
-func (m *Microservice) DownloadFile(file_id string) string {
+func (m *Microservice) DownloadFile(file_id string) CleanableFile {
 	filename, _ := m.ms.Client.Inventory.DownloadBinary(m.ms.WithServiceUser(), file_id)
-	return filename
+	return CleanableFile{Filename: filename}
 }
 
-func (m *Microservice) CleanupFile(filename string) {
-	dir := path.Dir(filename)
+func (cf *CleanableFile) Clean() {
+	dir := path.Dir(cf.Filename)
 	osRemoveAll(dir)
 }
 

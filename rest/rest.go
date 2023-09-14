@@ -1,11 +1,10 @@
 package rest
 
 import (
-	"fmt"
-	"net/http"
 	"c8y-scanner/cumulocity"
-
+	"fmt"
 	"github.com/gorilla/mux"
+	"net/http"
 )
 
 func hello(w http.ResponseWriter, r *http.Request) {

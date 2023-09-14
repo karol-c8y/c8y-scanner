@@ -1,8 +1,8 @@
 package cumulocity
 
 import (
-    "github.com/reubenmiller/go-c8y/pkg/microservice"
-    "github.com/reubenmiller/go-c8y/pkg/c8y"
+	"github.com/reubenmiller/go-c8y/pkg/c8y"
+	"github.com/reubenmiller/go-c8y/pkg/microservice"
 )
 
 var (
@@ -21,7 +21,7 @@ func DownloadFile(file_id string) string {
 }
 
 func RaiseEvent(eventType string, text string) {
-	event := c8y.Event {
+	event := c8y.Event{
 		Time:   c8y.NewTimestamp(),
 		Type:   eventType,
 		Text:   text,
@@ -31,23 +31,23 @@ func RaiseEvent(eventType string, text string) {
 }
 
 func RaiseCriticalAlarm(alarmType string, text string) {
-	alarm := c8y.Alarm {
-		Time:   	c8y.NewTimestamp(),
-		Type:   	alarmType,
-		Severity: 	c8y.AlarmSeverityCritical,
-		Text:   	text,
-		Source: 	c8y.NewSource(ms.GetAgent().ID),
+	alarm := c8y.Alarm{
+		Time:     c8y.NewTimestamp(),
+		Type:     alarmType,
+		Severity: c8y.AlarmSeverityCritical,
+		Text:     text,
+		Source:   c8y.NewSource(ms.GetAgent().ID),
 	}
 	ms.Client.Alarm.Create(ms.WithServiceUser(), alarm)
 }
 
 func RaiseMajorAlarm(alarmType string, text string) {
-	alarm := c8y.Alarm {
-		Time:   	c8y.NewTimestamp(),
-		Type:   	alarmType,
-		Severity: 	c8y.AlarmSeverityMajor,
-		Text:   	text,
-		Source: 	c8y.NewSource(ms.GetAgent().ID),
+	alarm := c8y.Alarm{
+		Time:     c8y.NewTimestamp(),
+		Type:     alarmType,
+		Severity: c8y.AlarmSeverityMajor,
+		Text:     text,
+		Source:   c8y.NewSource(ms.GetAgent().ID),
 	}
 	ms.Client.Alarm.Create(ms.WithServiceUser(), alarm)
 }

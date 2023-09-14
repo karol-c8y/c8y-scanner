@@ -14,14 +14,16 @@ type ScanResult struct {
 	Description string
 }
 
-func Test() {
+func Wait() {
 	clam := clamd.NewClamd("/tmp/clamd.sock")
 	err := clam.Ping()
 	for err != nil {
 		time.Sleep(2 * time.Second)
 		err = clam.Ping()
 	}
+}
 
+func Test() {
 	scan("https://www.google.com/robots.txt")
 	scan("https://secure.eicar.org/eicar.com")
 }

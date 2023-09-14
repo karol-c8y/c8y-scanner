@@ -1,47 +1,72 @@
 package scanner
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/dutchcoders/go-clamd"
+	"io"
+	"net/http"
+	"os"
 	"time"
 )
 
-func Scan() {
-	time.Sleep(20 * time.Second)
-	fmt.Println("Made with <3 DutchCoders")
+type ScanResult struct {
+	Vulnerable  bool
+	Description string
+}
 
-	c := clamd.NewClamd("/tmp/clamd.sock")
-	//_ = c
-
-	reader := bytes.NewReader(clamd.EICAR)
-	response, err := c.ScanStream(reader, make(chan bool))
-	for s := range response {
-		fmt.Printf("scan stream: %v %v\n", s, err)
-	}
-
-	response, err = c.AllMatchScanFile("./testfiles/")
-	for s := range response {
-		fmt.Printf("scan file: %v %v\n", s, err)
-	}
-
-	response, err = c.Version()
-	for s := range response {
-		fmt.Printf("version: %v %v\n", s, err)
-	}
-
-	for {
-		err := c.Ping()
-		fmt.Printf("Ping: %v\n", err)
-
-		stats, err := c.Stats()
-		fmt.Printf("%v %v\n", stats, err)
-
-		// err = c.Reload()
-		// fmt.Printf("Reload: %v\n", err)
-
+func Test() {
+	clam := clamd.NewClamd("/tmp/clamd.sock")
+	err := clam.Ping()
+	for err != nil {
 		time.Sleep(2 * time.Second)
+		err = clam.Ping()
 	}
-	// response, err = c.Shutdown()
-	// fmt.Println(response)
+
+	scan("https://www.google.com/robots.txt")
+	scan("https://secure.eicar.org/eicar.com")
+}
+
+func scan(url string) {
+	file, _ := os.CreateTemp("", "tmp")
+	defer os.Remove(file.Name())
+
+	resp, _ := http.Get(url)
+	defer resp.Body.Close()
+
+	io.Copy(file, resp.Body)
+
+	res := Scan(file.Name())
+	if res.Vulnerable {
+		fmt.Printf("%s vulnerable = %s\n", url, res.Description)
+	} else {
+		fmt.Printf("%s not vulnerable\n", url)
+	}
+}
+
+func Scan(path string) ScanResult {
+	fmt.Printf("Scan start file=%s\n", path)
+
+	clam := clamd.NewClamd("/tmp/clamd.sock")
+
+	os.Chmod(path, 444)
+	response, _ := clam.ContScanFile(path)
+
+	for s := range response {
+		//fmt.Printf("scan Raw: %v\n", s.Raw)
+		//fmt.Printf("scan Description: %v\n", s.Description)
+		//fmt.Printf("scan Hash: %v\n", s.Hash)
+		//fmt.Printf("scan Path: %v\n", s.Path)
+		//fmt.Printf("scan Size: %v\n", s.Size)
+		//fmt.Printf("scan Status: %v\n", s.Status)
+		//fmt.Printf("scan err %v\n", err)
+
+		switch s.Status {
+		case "FOUND":
+			return ScanResult{Vulnerable: true, Description: s.Description}
+		default:
+			return ScanResult{}
+		}
+	}
+
+	return ScanResult{}
 }

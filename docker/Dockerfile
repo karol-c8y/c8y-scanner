@@ -4,7 +4,6 @@ COPY --from=golang:1.19-alpine /usr/local/go/ /usr/local/go/
 ENV PATH="/usr/local/go/bin:${PATH}"
 
 WORKDIR /c8y-scanner
-COPY testfiles/ ./testfiles/
 COPY rest/ ./rest/
 COPY scanner/ ./scanner/
 COPY cumulocity/ ./cumulocity/

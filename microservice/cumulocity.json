@@ -1,0 +1,21 @@
+{
+    "apiVersion": "1",
+    "version": "0.1",
+    "provider": {
+        "name": "Cumulocity"
+    },
+    "name": "c8y-scanner",
+    "contextPath": "c8y-scanner",
+    "isolation": "PER_TENANT",
+    "requiredRoles": [
+        "ROLE_EVENT_ADMIN",
+        "ROLE_ALARM_ADMIN",
+        "ROLE_INVENTORY_READ",
+        "ROLE_INVENTORY_ADMIN"
+    ],
+    "resources" : {
+        "cpu" : "1000m",
+        "memory" : "3Gi"
+    },
+    "roles": []
+}
